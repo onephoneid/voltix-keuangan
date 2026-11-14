@@ -194,15 +194,16 @@
 
   <section class="card fade" id="rekap">
     <h2>📅 Rekap bulanan</h2>
-    <p class="hint">Jul–Okt dari export Shopee (laba = estimasi), bulan berjalan live dari sheet. Laba bersih = laba order − iklan & biaya lain.</p>
+    <p class="hint">Jul–Okt dari export Shopee (laba = estimasi), bulan berjalan live dari sheet. Laba bersih = laba order − iklan & biaya lain. ROAS dihitung untuk seluruh penjualan toko, bukan hanya pesanan dari iklan.</p>
     <div class="kpis" style="margin-bottom:14px">
       <div class="kpi" style="padding:12px;border-radius:14px;background:rgba(255,255,255,.04)"><div class="label">Rata-rata laba bersih / bulan</div><div class="value num" id="m-avg">—</div><div class="sub">Bulan berjalan diproyeksikan ke 30 hari</div></div>
       <div class="kpi" style="padding:12px;border-radius:14px;background:rgba(255,255,255,.04)"><div class="label">Perkiraan laba bersih / tahun</div><div class="value num" id="m-year">—</div><div class="sub">Rata-rata × 12</div></div>
       <div class="kpi" style="padding:12px;border-radius:14px;background:rgba(255,255,255,.04)"><div class="label">Perkiraan omzet bersih / tahun</div><div class="value num" id="m-oyear">—</div><div class="sub">Setelah potongan Shopee</div></div>
+      <div class="kpi" style="padding:12px;border-radius:14px;background:rgba(255,255,255,.04)"><div class="label">ROAS rata-rata</div><div class="value num" id="m-roas">—</div><div class="sub" id="m-roas-sub">Penjualan Shopee ÷ biaya iklan</div></div>
     </div>
     <div class="chartbox"><canvas id="c-bulan"></canvas></div>
     <div class="scroll" style="margin-top:14px"><table>
-      <thead><tr><th>Bulan</th><th class="r">Pesanan</th><th class="r hide-sm">Pengunjung</th><th class="r">Omzet bersih</th><th class="r hide-sm">Laba order</th><th class="r hide-sm">Iklan</th><th class="r">Laba bersih</th></tr></thead>
+      <thead><tr><th>Bulan</th><th class="r">Pesanan</th><th class="r hide-sm">Pengunjung</th><th class="r">Omzet bersih</th><th class="r hide-sm">Laba order</th><th class="r hide-sm">Iklan</th><th class="r">ROAS</th><th class="r">Laba bersih</th></tr></thead>
       <tbody id="tb-bulan"></tbody></table></div>
   </section>
 
@@ -266,7 +267,7 @@ async function load() {
     const kasRows = kas.slice(1).map(r => ({ tanggal: iso(r[0]), masuk: num(r[3]), keluar: num(r[4]) })).filter(k => k.tanggal);
     render(kasRows, saldoAwal, stok.slice(1).filter(r => r[0] && !r[0].startsWith('Cara')));
     const now = new Date();
-    try { renderBulan(await getCsv('Rekap Bulanan', 'A2:N13&headers=0')); } catch (e) { $('rekap').style.display = 'none'; }
+    try { renderBulan(await getCsv('Rekap Bulanan', 'A2:P18&headers=0')); } catch (e) { $('rekap').style.display = 'none'; }
     $('live-txt').textContent = 'Live · ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
     first = false;
   } catch (e) { $('err').textContent = '⚠️ ' + e.message; $('err').style.display = 'block'; $('live-txt').textContent = 'Gagal memuat — klik untuk coba lagi'; }
@@ -365,11 +366,15 @@ let chartBulan;
 function renderBulan(rows) {
   const months = rows.filter(r => /^\w{3} \d{4}$/.test(String(r[0]).trim())).map(r => ({
     bulan: r[0].trim(), status: r[1], hari: num(r[2]), pesanan: num(r[4]), pengunjung: num(r[5]),
-    omzet: num(r[9]), laba: num(r[10]), iklan: num(r[11]), bersih: num(r[12]), bersih30: num(r[13]) }));
+    omzet: num(r[9]), laba: num(r[10]), iklan: num(r[11]), bersih: num(r[12]), bersih30: num(r[13]), roas: num(r[14]) }));
+  const ringkas = Object.fromEntries(rows.filter(r => r[0] && r[1]).map(r => [String(r[0]).trim(), num(r[1])]));
+  const roasAvg = ringkas['ROAS rata-rata'] || 0, roasBep = ringkas['ROAS impas (iklan = laba order)'] || 0;
+  const fx = (v) => v ? v.toFixed(1).replace('.', ',') + '×' : '—';
   if (!months.length) { $('rekap').style.display = 'none'; return; }
   $('rekap').style.display = '';
   const avg = months.reduce((t, m) => t + m.bersih30, 0) / months.length;
   const avgOmzet = months.reduce((t, m) => t + (m.status === 'Berjalan' && m.hari ? m.omzet / m.hari * 30 : m.omzet), 0) / months.length;
+  $('m-roas').textContent = fx(roasAvg); $('m-roas-sub').textContent = 'Penjualan Shopee ÷ iklan · impas di ' + fx(roasBep);
   $('m-avg').textContent = rp(avg); $('m-year').textContent = rp(avg * 12); $('m-oyear').textContent = rp(avgOmzet * 12);
   const tb = $('tb-bulan'); tb.innerHTML = '';
   months.forEach(m => {
@@ -378,6 +383,7 @@ function renderBulan(rows) {
     const b = cell(m.bulan); if (m.status === 'Berjalan') { const p = document.createElement('span'); p.className = 'pill'; p.style.marginLeft = '6px'; p.textContent = m.hari + ' hari'; b.append(p); }
     cell(m.pesanan.toLocaleString('id-ID'), 'r num'); cell(m.pengunjung ? m.pengunjung.toLocaleString('id-ID') : '—', 'r num hide-sm');
     cell(rp(m.omzet), 'r num'); cell(rp(m.laba), 'r num hide-sm'); cell(rp(m.iklan), 'r num hide-sm');
+    cell(fx(m.roas), 'r num ' + (m.roas && roasBep ? (m.roas >= roasBep ? 'pos' : 'neg') : ''));
     const td = cell(rp(m.bersih), 'r num ' + (m.bersih < 0 ? 'neg' : 'pos'));
     if (m.status === 'Berjalan') { const s = document.createElement('small'); s.style.cssText = 'display:block;color:var(--muted);font-size:11px'; s.textContent = '≈ ' + rp(m.bersih30) + ' / 30 hari'; td.append(s); }
     tb.append(tr);
