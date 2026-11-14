@@ -42,7 +42,7 @@
   nav.tabs a { color:var(--muted); text-decoration:none; font-size:13px; font-weight:600; padding:7px 14px; border-radius:999px; transition:background .2s,color .2s; }
   nav.tabs a:hover { color:var(--fg); background:rgba(255,255,255,.07); }
   nav.tabs a.on { color:var(--ink); background:var(--blue); }
-  @media (max-width:720px){ .topbar-in { gap:10px; padding:10px 16px; } .brand { flex:1; min-width:0; } .brand > div { min-width:0; } .logo { width:38px; height:38px; } h1 { font-size:18px; } .subtitle { font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .live { padding:8px; } #live-txt { display:none; } .eye { padding:8px; } .eye span { display:none; } nav.tabs { order:3; width:100%; justify-content:space-between; } nav.tabs a { padding:6px 10px; } }
+  @media (max-width:720px){ .topbar-in { gap:10px; padding:10px 16px; } .brand { flex:1; min-width:0; } .brand > div { min-width:0; } .logo { width:38px; height:38px; } h1 { font-size:18px; } .subtitle { font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .live { padding:8px; } #live-txt { display:none; } .eye { padding:8px; } .eye span { display:none; } nav.tabs { order:3; width:100%; justify-content:space-between; overflow-x:auto; scrollbar-width:none; } nav.tabs a { padding:6px 9px; flex:none; } }
   .sec { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin:10px 2px -4px; scroll-margin-top:90px; }
   .sec h3 { margin:0; font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); }
   .sec span { font-size:12px; color:var(--dim); }
@@ -62,6 +62,28 @@
   .sens { transition:filter .3s; }
   body.hide-laba .sens { filter:blur(9px); user-select:none; pointer-events:none; }
   .right { display:flex; align-items:center; gap:8px; }
+  .mtabs { display:flex; gap:6px; overflow-x:auto; padding:2px 0 6px; scrollbar-width:none; }
+  .mtabs::-webkit-scrollbar { display:none; }
+  .mtab { flex:none; font:inherit; font-size:13px; font-weight:700; padding:8px 16px; border-radius:999px; cursor:pointer;
+    color:var(--muted); background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); transition:all .2s; }
+  .mtab small { display:block; font-size:10px; font-weight:600; opacity:.7; }
+  .mtab:hover { color:var(--fg); border-color:rgba(255,210,31,.4); }
+  .mtab.on { color:var(--ink); background:var(--blue); border-color:var(--blue); }
+  .pb-head { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:14px 0 12px; }
+  .pb-head h4 { margin:0; font-size:22px; font-weight:800; letter-spacing:-.02em; }
+  .badge2 { font-size:11px; font-weight:700; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,.07); color:var(--muted); }
+  .badge2.live { background:rgba(34,211,160,.14); color:var(--green); }
+  .badge2.est { background:rgba(255,210,31,.12); color:var(--yellow); }
+  .pb-grid { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr)); }
+  .pb-tile { padding:18px; border-radius:16px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); }
+  .pb-tile .k { font-size:13px; font-weight:600; color:var(--muted); }
+  .pb-tile .v { font-size:clamp(24px,3.4vw,32px); font-weight:800; letter-spacing:-.02em; margin:8px 0 4px; }
+  .pb-tile .s { font-size:12px; color:var(--muted); display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .pb-tile.kas { color:var(--ink); border-color:rgba(255,210,31,.6); background:linear-gradient(135deg,#ffd21f 0%,#ffbf1a 55%,#ff9f1c 100%); }
+  .pb-tile.kas .k, .pb-tile.kas .s { color:rgba(0,0,0,.62); }
+  .pb-tile.untung { background:linear-gradient(135deg,rgba(34,211,160,.16),rgba(34,211,160,.04)); border-color:rgba(34,211,160,.3); }
+  .pb-chips { display:flex; gap:8px; flex-wrap:wrap; margin:14px 0 4px; }
+  .pb-note { margin-top:12px; padding:14px; border-radius:12px; background:rgba(255,255,255,.03); color:var(--muted); font-size:13px; }
   .foot-brand { display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:6px; color:var(--muted); font-weight:700; }
   .foot-brand .logo { width:24px; height:24px; border-radius:7px; font-size:11px; box-shadow:none; }
   .foot-brand .logo.has-img { padding:0; }
@@ -169,7 +191,7 @@
         <div class="subtitle">Dashboard arus kas · <span id="periode">memuat…</span></div>
       </div>
     </div>
-    <nav class="tabs"><a href="#ringkasan" class="on">Ringkasan</a><a href="#rekap">Bulanan</a><a href="#detail">Detail</a><a href="#order">Order</a></nav>
+    <nav class="tabs"><a href="#ringkasan" class="on">Ringkasan</a><a href="#perbulan">Per Bulan</a><a href="#rekap">Tren</a><a href="#detail">Detail</a><a href="#order">Order</a></nav>
     <div class="right">
       <button class="eye" id="eye" type="button" aria-pressed="false" title="Sembunyikan / tampilkan angka untung & laba">
         <svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -235,6 +257,20 @@
   <section class="grid2 fade">
     <div class="card"><h2>📊 Omzet & laba per hari</h2><p class="hint">Arahkan ke batang untuk detail.</p><div class="chartbox"><canvas id="c-harian" class="sens"></canvas></div></div>
     <div class="card"><h2>💰 Saldo kas berjalan</h2><p class="hint">Setelah vendor, biaya lain, dan iklan.</p><div class="chartbox"><canvas id="c-saldo"></canvas></div></div>
+  </section>
+
+  <div class="sec"><h3>Laporan per bulan</h3><span>Pilih bulan</span></div>
+  <section class="card fade" id="perbulan" style="scroll-margin-top:90px">
+    <div class="mtabs" id="mtabs" role="tablist" aria-label="Pilih bulan"></div>
+    <div class="pb-head"><h4 id="pb-title">—</h4><span class="badge2" id="pb-badge">—</span></div>
+    <div class="pb-grid">
+      <div class="pb-tile kas"><div class="k">Saldo kas akhir bulan</div><div class="v num" id="pb-saldo">—</div><div class="s" id="pb-saldo-sub">—</div></div>
+      <div class="pb-tile"><div class="k">Laba order</div><div class="v num sens" id="pb-laba">—</div><div class="s sens" id="pb-laba-sub">—</div></div>
+      <div class="pb-tile untung"><div class="k">Keuntungan bersih</div><div class="v num sens" id="pb-bersih">—</div><div class="s sens" id="pb-bersih-sub">—</div></div>
+    </div>
+    <div class="pb-chips" id="pb-chips"></div>
+    <div class="chartbox" id="pb-chartbox" style="margin-top:10px"><canvas id="c-pb" class="sens"></canvas></div>
+    <div class="pb-note" id="pb-note" style="display:none"></div>
   </section>
 
   <div class="sec" id="rekap-h"><h3>Tren bulanan</h3><span>Juli – sekarang</span></div>
@@ -316,6 +352,7 @@ async function load() {
     render(kasRows, saldoAwal, stok.slice(1).filter(r => r[0] && !r[0].startsWith('Cara')));
     const now = new Date();
     try { renderBulan(await getCsv('Rekap Bulanan', 'A2:P18&headers=0')); } catch (e) { $('rekap').style.display = 'none'; }
+    try { renderPerBulan(); } catch (e) { console.error(e); $('perbulan').style.display = 'none'; }
     $('live-txt').textContent = 'Live · ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
     first = false;
   } catch (e) { $('err').textContent = '⚠️ ' + e.message; $('err').style.display = 'block'; $('live-txt').textContent = 'Gagal memuat — klik untuk coba lagi'; }
@@ -333,6 +370,7 @@ function render(kas, saldoAwal, stok) {
   const byDay = days.map(d => { const os = orders.filter(o => o.tanggal === d), ks = kas.filter(k => k.tanggal === d);
     return { d, n: os.length, omzet: sum(os, o => o.harga), laba: sum(os, o => o.laba), arus: sum(os, o => o.arus) + sum(ks, k => k.masuk - k.keluar), iklan: sum(ks, k => k.keluar - k.masuk) }; });
   let run = saldoAwal; byDay.forEach(x => { run += x.arus; x.saldo = run; });
+  DAILY = byDay;
 
   countUp($('k-saldo'), saldo);
   $('k-bersih').textContent = rp(laba + lainIn - lainOut); $('k-lain').textContent = rp(lainOut);
@@ -410,11 +448,94 @@ function render(kas, saldoAwal, stok) {
   drawOrders();
 }
 
-let chartBulan;
+let chartBulan, chartPB, DAILY = [], REKAP = [], selMonth = null;
+const BLN_IDX = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, Mei: 4, Jun: 5, Jul: 6, Agu: 7, Agt: 7, Sep: 8, Okt: 9, Nov: 10, Des: 11 };
+const BLN_FULL = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const mLabel = (k, full) => { const [y, m] = k.split('-').map(Number); return (full ? BLN_FULL : BULAN)[m - 1] + (full ? ' ' + y : ''); };
+
+function buildMonths() {
+  const map = {};
+  REKAP.forEach(m => { const [b, y] = m.bulan.split(' '); if (!(b in BLN_IDX)) return;
+    const k = y + '-' + String(BLN_IDX[b] + 1).padStart(2, '0');
+    map[k] = { key: k, omzet: m.omzet, laba: m.laba, iklan: m.iklan, bersih: m.bersih, pesanan: m.pesanan, pengunjung: m.pengunjung, roas: m.roas, hari: m.hari, saldo: null, days: [], est: m.status !== 'Berjalan', live: false }; });
+  DAILY.forEach(d => { const k = d.d.slice(0, 7);
+    let m = map[k];
+    if (!m || !m.live) m = map[k] = Object.assign(m || { key: k, pengunjung: 0, roas: 0 }, { omzet: 0, laba: 0, iklan: 0, pesanan: 0, days: [], live: true, est: false });
+    m.omzet += d.omzet; m.laba += d.laba; m.iklan += d.iklan; m.pesanan += d.n; m.days.push(d);
+    m.saldo = d.saldo; m.saldoAwal = m.days[0].saldo - m.days[0].arus; m.hari = m.days.length; m.bersih = m.laba - m.iklan; });
+  const keys = Object.keys(map).sort(), last = DAILY.length ? DAILY[DAILY.length - 1].d : '';
+  keys.forEach(k => { const m = map[k], [y, mo] = k.split('-').map(Number), dim = new Date(y, mo, 0).getDate();
+    m.dim = dim; m.running = m.live && last.slice(0, 7) === k && Number(last.slice(8)) < dim;
+    m.pace = m.running && m.hari ? m.bersih / m.hari * dim : m.bersih; });
+  return keys.map(k => map[k]);
+}
+
+function renderPerBulan() {
+  const months = buildMonths();
+  if (!months.length) { $('perbulan').style.display = 'none'; return; }
+  $('perbulan').style.display = '';
+  if (!selMonth || !months.find(m => m.key === selMonth)) selMonth = months[months.length - 1].key;
+  const tabs = $('mtabs'); tabs.innerHTML = '';
+  months.forEach(m => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'mtab' + (m.key === selMonth ? ' on' : '');
+    b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', m.key === selMonth);
+    b.textContent = mLabel(m.key); const sm = document.createElement('small'); sm.textContent = m.key.slice(0, 4); b.append(sm);
+    b.addEventListener('click', () => { selMonth = m.key; renderPerBulan(); });
+    tabs.append(b);
+  });
+  tabs.querySelector('.on')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  const i = months.findIndex(m => m.key === selMonth), m = months[i], prev = months[i - 1];
+  $('pb-title').textContent = mLabel(m.key, true);
+  const badge = $('pb-badge');
+  badge.className = 'badge2 ' + (m.running ? 'live' : m.est ? 'est' : '');
+  badge.textContent = m.running ? 'Berjalan · ' + m.hari + ' dari ' + m.dim + ' hari' : m.est ? 'Perkiraan dari export Shopee' : 'Tercatat lengkap';
+  const delta = (el, cur, old) => { el.querySelectorAll('.delta').forEach(x => x.remove()); if (!prev || !old) return;
+    const d = (cur - old) / Math.abs(old), sp = document.createElement('span'); sp.className = 'delta ' + (d >= 0 ? 'up' : 'down');
+    sp.textContent = (d >= 0 ? '▲ ' : '▼ ') + Math.abs(d * 100).toFixed(0) + '% vs ' + mLabel(prev.key) + (m.running ? ' (laju)' : ''); el.append(sp); };
+  // saldo
+  if (m.saldo != null) {
+    $('pb-saldo').textContent = rp(m.saldo);
+    const arus = m.saldo - m.saldoAwal;
+    $('pb-saldo-sub').textContent = 'Awal bulan ' + rp(m.saldoAwal) + ' · arus kas ' + (arus >= 0 ? '+' : '') + rp(arus);
+  } else { $('pb-saldo').textContent = '—'; $('pb-saldo-sub').textContent = 'Belum dicatat · pencatatan kas mulai Nov 2026'; }
+  // laba
+  $('pb-laba').textContent = rp(m.laba);
+  const lsub = $('pb-laba-sub'); lsub.textContent = 'Margin ' + (m.omzet ? (m.laba / m.omzet * 100).toFixed(1).replace('.', ',') : 0) + '% dari omzet ';
+  const prevLaba = prev ? (m.running && m.hari ? null : prev.laba) : null;
+  if (m.running && prev && m.hari) delta(lsub, m.laba / m.hari * m.dim, prev.laba); else delta(lsub, m.laba, prevLaba);
+  // bersih
+  $('pb-bersih').textContent = rp(m.bersih);
+  const bsub = $('pb-bersih-sub'); bsub.textContent = m.running ? '≈ ' + rp(m.pace) + ' sebulan penuh ' : 'Setelah iklan & biaya lain ' + rp(m.iklan) + ' ';
+  delta(bsub, m.pace, prev ? prev.pace : 0);
+  // chips
+  const chips = $('pb-chips'); chips.innerHTML = '';
+  const fx = (v) => v ? v.toFixed(1).replace('.', ',') + '×' : null;
+  [['Omzet bersih', rp(m.omzet)], ['Pesanan', m.pesanan.toLocaleString('id-ID')], ['Iklan & biaya lain', rp(m.iklan)],
+   ['ROAS', fx(m.roas)], ['Pengunjung', m.pengunjung ? m.pengunjung.toLocaleString('id-ID') : null],
+   ['Untung / hari', m.hari ? rp(m.bersih / m.hari) : null, true]].forEach(([k, v, sens]) => {
+    if (!v) return; const c = document.createElement('span'); c.className = 'chip' + (sens ? ' sens' : ''); c.append(k + ' ');
+    const b = document.createElement('b'); b.className = 'num'; b.textContent = v; c.append(b); chips.append(c); });
+  // chart
+  if (chartPB) { chartPB.destroy(); chartPB = null; }
+  if (m.days.length) {
+    $('pb-chartbox').style.display = ''; $('pb-note').style.display = 'none';
+    const tip = { backgroundColor: '#1c1c1c', borderColor: 'rgba(255,255,255,.12)', borderWidth: 1, padding: 10, cornerRadius: 10 };
+    chartPB = new Chart($('c-pb'), { data: { labels: m.days.map(d => tgl(d.d)), datasets: [
+        { type: 'bar', label: 'Keuntungan bersih', data: m.days.map(d => d.laba - d.iklan), backgroundColor: 'rgba(34,211,160,.8)', borderRadius: 6, maxBarThickness: 22, yAxisID: 'y', order: 1 },
+        { type: 'line', label: 'Saldo kas', data: m.days.map(d => d.saldo), borderColor: '#ffd21f', backgroundColor: '#ffd21f', borderWidth: 3, pointRadius: 2, tension: .3, yAxisID: 'y1', order: 0 }] },
+      options: { maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { labels: { usePointStyle: true, boxWidth: 8 } }, tooltip: { ...tip, callbacks: { label: c => ' ' + c.dataset.label + ': ' + rp(c.raw) } } },
+        scales: { x: { grid: { display: false } }, y: { position: 'left', ticks: { callback: rpShort } }, y1: { position: 'right', grid: { display: false }, ticks: { callback: rpShort } } } } });
+  } else {
+    $('pb-chartbox').style.display = 'none'; const n = $('pb-note'); n.style.display = '';
+    n.textContent = 'Rincian harian dan saldo kas belum tersedia untuk bulan ini. Angka laba memakai penjualan dari export Shopee × margin rata-rata, dan biaya iklan diasumsikan Rp 100.000/hari.';
+  }
+}
 function renderBulan(rows) {
   const months = rows.filter(r => /^\w{3} \d{4}$/.test(String(r[0]).trim())).map(r => ({
     bulan: r[0].trim(), status: r[1], hari: num(r[2]), pesanan: num(r[4]), pengunjung: num(r[5]),
     omzet: num(r[9]), laba: num(r[10]), iklan: num(r[11]), bersih: num(r[12]), bersih30: num(r[13]), roas: num(r[14]) }));
+  REKAP = months;
   const ringkas = Object.fromEntries(rows.filter(r => r[0] && r[1]).map(r => [String(r[0]).trim(), num(r[1])]));
   const roasAvg = ringkas['ROAS rata-rata'] || 0, roasBep = ringkas['ROAS impas (iklan = laba order)'] || 0;
   const fx = (v) => v ? v.toFixed(1).replace('.', ',') + '×' : '—';
@@ -472,7 +593,7 @@ try { setHide(localStorage.getItem('voltix-hide-laba') === '1'); } catch (e) {}
 (() => { const img = new Image(); img.onload = () => document.querySelectorAll('[data-logo]').forEach(el => { el.textContent = ''; el.classList.add('has-img'); const i = img.cloneNode(); i.alt = 'Voltix'; el.append(i); }); img.src = 'logo-mark.png'; })();
 const navLinks = [...document.querySelectorAll('nav.tabs a')];
 const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) navLinks.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id)); }), { rootMargin: '-40% 0px -55% 0px' });
-['ringkasan', 'rekap', 'detail', 'order'].forEach(id => $(id) && io.observe($(id)));
+['ringkasan', 'perbulan', 'rekap', 'detail', 'order'].forEach(id => $(id) && io.observe($(id)));
 document.querySelectorAll('th[data-k]').forEach(th => th.addEventListener('click', () => { const k = th.dataset.k; sortD = k === sortK ? -sortD : -1; sortK = k; drawOrders(); }));
 $('q').addEventListener('input', drawOrders);
 $('live').addEventListener('click', load);
