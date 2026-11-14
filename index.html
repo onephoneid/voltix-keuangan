@@ -84,6 +84,30 @@
   .pb-tile.untung { background:linear-gradient(135deg,rgba(34,211,160,.16),rgba(34,211,160,.04)); border-color:rgba(34,211,160,.3); }
   .pb-chips { display:flex; gap:8px; flex-wrap:wrap; margin:14px 0 4px; }
   .pb-note { margin-top:12px; padding:14px; border-radius:12px; background:rgba(255,255,255,.03); color:var(--muted); font-size:13px; }
+  .pb-overall { display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr)); margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid rgba(255,255,255,.07); }
+  .pb-overall .mini .label { font-size:12px; color:var(--muted); font-weight:600; }
+  .pb-overall .mini .value { font-size:22px; font-weight:800; margin:6px 0 2px; }
+  .pb-overall .mini .sub { font-size:11px; color:var(--dim); }
+  .pb-overall .mini.gold .value { color:var(--yellow); }
+  .seg { display:inline-flex; padding:3px; border-radius:999px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); margin:16px 0 10px; }
+  .seg button { font:inherit; font-size:12px; font-weight:700; padding:6px 14px; border-radius:999px; border:0; background:transparent; color:var(--muted); cursor:pointer; }
+  .seg button.on { background:rgba(255,255,255,.1); color:var(--fg); }
+  .cal { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; }
+  .cal .dow { font-size:11px; font-weight:700; color:var(--dim); text-align:center; padding:4px 0; text-transform:uppercase; letter-spacing:.06em; }
+  .cal .day { min-height:84px; border-radius:12px; padding:8px; display:flex; flex-direction:column; gap:3px; min-width:0;
+    background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.05); position:relative; overflow:hidden; }
+  .cal .day .n { font-size:12px; font-weight:700; color:var(--muted); display:flex; justify-content:space-between; }
+  .cal .day .n i { font-style:normal; color:var(--yellow); }
+  .cal .day .u { font-size:14px; font-weight:800; color:var(--green); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .cal .day .u.neg { color:var(--red); }
+  .cal .day .sl { font-size:11px; font-weight:600; color:var(--yellow); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .cal .day .o { font-size:10px; color:var(--dim); margin-top:auto; }
+  .cal .day.blank { background:transparent; border-color:transparent; }
+  .cal .day.nodata { opacity:.4; }
+  .cal .day.today { border-color:var(--yellow); box-shadow:inset 0 0 0 1px var(--yellow); }
+  .cal-legend { display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin-top:10px; }
+  .cal-legend span::before { content:''; display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; background:var(--c); }
+  @media (max-width:560px){ .pb-overall { grid-template-columns:1fr 1fr; gap:8px; } .pb-overall .mini { padding:10px; } .pb-overall .mini .value { font-size:16px; } .pb-overall .mini .sub { font-size:10px; } .cal { gap:3px; } .cal .day { min-height:60px; padding:5px 4px; border-radius:9px; } .cal .day .n { font-size:11px; } .cal .day .u { font-size:10.5px; letter-spacing:-.02em; } .cal .day .sl { font-size:9.5px; } .cal .day .o { display:none; } .cal .dow { font-size:9.5px; letter-spacing:0; } }
   .foot-brand { display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:6px; color:var(--muted); font-weight:700; }
   .foot-brand .logo { width:24px; height:24px; border-radius:7px; font-size:11px; box-shadow:none; }
   .foot-brand .logo.has-img { padding:0; }
@@ -261,6 +285,12 @@
 
   <div class="sec"><h3>Laporan per bulan</h3><span>Pilih bulan</span></div>
   <section class="card fade" id="perbulan" style="scroll-margin-top:90px">
+    <div class="pb-overall">
+      <div class="mini gold"><div class="label">Saldo kas keseluruhan</div><div class="value num" id="ov-saldo">—</div><div class="sub" id="ov-saldo-sub">—</div></div>
+      <div class="mini"><div class="label">Total keuntungan bersih</div><div class="value num sens" id="ov-bersih">—</div><div class="sub" id="ov-bersih-sub">—</div></div>
+      <div class="mini"><div class="label">Total laba order</div><div class="value num sens" id="ov-laba">—</div><div class="sub" id="ov-laba-sub">—</div></div>
+      <div class="mini"><div class="label">Total omzet bersih</div><div class="value num" id="ov-omzet">—</div><div class="sub" id="ov-omzet-sub">—</div></div>
+    </div>
     <div class="mtabs" id="mtabs" role="tablist" aria-label="Pilih bulan"></div>
     <div class="pb-head"><h4 id="pb-title">—</h4><span class="badge2" id="pb-badge">—</span></div>
     <div class="pb-grid">
@@ -269,7 +299,10 @@
       <div class="pb-tile untung"><div class="k">Keuntungan bersih</div><div class="v num sens" id="pb-bersih">—</div><div class="s sens" id="pb-bersih-sub">—</div></div>
     </div>
     <div class="pb-chips" id="pb-chips"></div>
-    <div class="chartbox" id="pb-chartbox" style="margin-top:10px"><canvas id="c-pb" class="sens"></canvas></div>
+    <div class="seg" role="tablist"><button type="button" id="v-cal" class="on">📅 Kalender</button><button type="button" id="v-chart">📈 Grafik</button></div>
+    <div id="pb-calwrap"><div class="cal" id="pb-cal"></div>
+      <div class="cal-legend"><span style="--c:var(--green)">Untung bersih hari itu</span><span style="--c:var(--yellow)">Saldo kas akhir hari</span><span style="--c:var(--red)">Rugi</span></div></div>
+    <div class="chartbox" id="pb-chartbox" style="margin-top:10px;display:none"><canvas id="c-pb" class="sens"></canvas></div>
     <div class="pb-note" id="pb-note" style="display:none"></div>
   </section>
 
@@ -475,6 +508,13 @@ function renderPerBulan() {
   if (!months.length) { $('perbulan').style.display = 'none'; return; }
   $('perbulan').style.display = '';
   if (!selMonth || !months.find(m => m.key === selMonth)) selMonth = months[months.length - 1].key;
+  const sumOf = f => months.reduce((t, x) => t + f(x), 0), first = mLabel(months[0].key, true), lastM = months[months.length - 1];
+  const nowSaldo = DAILY.length ? DAILY[DAILY.length - 1].saldo : null;
+  $('ov-saldo').textContent = nowSaldo == null ? '—' : rp(nowSaldo);
+  $('ov-saldo-sub').textContent = DAILY.length ? 'Per ' + tgl(DAILY[DAILY.length - 1].d) + ' ' + DAILY[DAILY.length - 1].d.slice(0, 4) + ' · tercatat sejak ' + tgl(DAILY[0].d) : '—';
+  $('ov-bersih').textContent = rp(sumOf(x => x.bersih)); $('ov-bersih-sub').textContent = first + ' – sekarang · ' + months.length + ' bulan';
+  $('ov-laba').textContent = rp(sumOf(x => x.laba)); $('ov-laba-sub').textContent = 'Rata-rata ' + rp(sumOf(x => x.laba) / months.length) + ' / bulan';
+  $('ov-omzet').textContent = rp(sumOf(x => x.omzet)); $('ov-omzet-sub').textContent = sumOf(x => x.pesanan).toLocaleString('id-ID') + ' pesanan';
   const tabs = $('mtabs'); tabs.innerHTML = '';
   months.forEach(m => {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'mtab' + (m.key === selMonth ? ' on' : '');
@@ -515,10 +555,17 @@ function renderPerBulan() {
    ['Untung / hari', m.hari ? rp(m.bersih / m.hari) : null, true]].forEach(([k, v, sens]) => {
     if (!v) return; const c = document.createElement('span'); c.className = 'chip' + (sens ? ' sens' : ''); c.append(k + ' ');
     const b = document.createElement('b'); b.className = 'num'; b.textContent = v; c.append(b); chips.append(c); });
+  renderCal(m);
+  $('v-cal').classList.toggle('on', pbView === 'cal'); $('v-chart').classList.toggle('on', pbView === 'chart');
+  $('pb-calwrap').style.display = pbView === 'cal' && m.days.length ? '' : 'none';
   // chart
   if (chartPB) { chartPB.destroy(); chartPB = null; }
-  if (m.days.length) {
-    $('pb-chartbox').style.display = ''; $('pb-note').style.display = 'none';
+  $('pb-chartbox').style.display = 'none';
+  if (!m.days.length) { const n = $('pb-note'); n.style.display = '';
+    n.textContent = 'Rincian harian dan saldo kas belum tersedia untuk bulan ini (pencatatan harian mulai 1 Nov 2026). Angka laba memakai penjualan dari export Shopee × margin rata-rata, dan biaya iklan diasumsikan Rp 100.000/hari.'; }
+  else $('pb-note').style.display = 'none';
+  if (m.days.length && pbView === 'chart') {
+    $('pb-chartbox').style.display = '';
     const tip = { backgroundColor: '#1c1c1c', borderColor: 'rgba(255,255,255,.12)', borderWidth: 1, padding: 10, cornerRadius: 10 };
     chartPB = new Chart($('c-pb'), { data: { labels: m.days.map(d => tgl(d.d)), datasets: [
         { type: 'bar', label: 'Keuntungan bersih', data: m.days.map(d => d.laba - d.iklan), backgroundColor: 'rgba(34,211,160,.8)', borderRadius: 6, maxBarThickness: 22, yAxisID: 'y', order: 1 },
@@ -526,11 +573,38 @@ function renderPerBulan() {
       options: { maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
         plugins: { legend: { labels: { usePointStyle: true, boxWidth: 8 } }, tooltip: { ...tip, callbacks: { label: c => ' ' + c.dataset.label + ': ' + rp(c.raw) } } },
         scales: { x: { grid: { display: false } }, y: { position: 'left', ticks: { callback: rpShort } }, y1: { position: 'right', grid: { display: false }, ticks: { callback: rpShort } } } } });
-  } else {
-    $('pb-chartbox').style.display = 'none'; const n = $('pb-note'); n.style.display = '';
-    n.textContent = 'Rincian harian dan saldo kas belum tersedia untuk bulan ini. Angka laba memakai penjualan dari export Shopee × margin rata-rata, dan biaya iklan diasumsikan Rp 100.000/hari.';
   }
 }
+
+function renderCal(m) {
+  const cal = $('pb-cal'); cal.innerHTML = '';
+  ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].forEach(d => { const e = document.createElement('div'); e.className = 'dow'; e.textContent = d; cal.append(e); });
+  const [y, mo] = m.key.split('-').map(Number), offset = (new Date(y, mo - 1, 1).getDay() + 6) % 7, dim = new Date(y, mo, 0).getDate();
+  const byD = Object.fromEntries(m.days.map(d => [d.d, d]));
+  const tiny = matchMedia('(max-width:560px)').matches, fmt = v => tiny ? rpShort(v).replace(' ', '').replace(',0', '') : rpShort(v);
+  const best = m.days.length ? Math.max(...m.days.map(d => d.laba - d.iklan)) : null;
+  const n0 = new Date(), todayKey = n0.getFullYear() + '-' + String(n0.getMonth() + 1).padStart(2, '0') + '-' + String(n0.getDate()).padStart(2, '0');
+  for (let i = 0; i < offset; i++) { const e = document.createElement('div'); e.className = 'day blank'; cal.append(e); }
+  for (let dd = 1; dd <= dim; dd++) {
+    const key = m.key + '-' + String(dd).padStart(2, '0'), d = byD[key];
+    const e = document.createElement('div'); e.className = 'day' + (d ? '' : ' nodata') + (key === todayKey ? ' today' : '');
+    const n = document.createElement('div'); n.className = 'n'; n.textContent = dd; e.append(n);
+    if (d) {
+      const u = d.laba - d.iklan;
+      if (u === best && m.days.length > 1) { const st = document.createElement('i'); st.textContent = '★'; st.title = 'Hari terbaik bulan ini'; n.append(st); }
+      e.style.background = u >= 0 ? `rgba(34,211,160,${(0.05 + 0.22 * Math.min(1, u / (best || 1))).toFixed(3)})` : 'rgba(255,93,108,.12)';
+      const ue = document.createElement('div'); ue.className = 'u num sens' + (u < 0 ? ' neg' : ''); ue.textContent = (u >= 0 && !tiny ? '+' : '') + fmt(u); e.append(ue);
+      const se = document.createElement('div'); se.className = 'sl num'; se.textContent = fmt(d.saldo); e.append(se);
+      const oe = document.createElement('div'); oe.className = 'o'; oe.textContent = d.n + ' order'; e.append(oe);
+      const tt = `${dd} ${BLN_FULL[mo - 1]} ${y}\nUntung bersih: ${rp(u)}\nLaba order: ${rp(d.laba)} · Iklan: ${rp(d.iklan)}\nSaldo kas: ${rp(d.saldo)}\nOrder: ${d.n} · Omzet: ${rp(d.omzet)}`;
+      e.addEventListener('mouseenter', () => { e.title = document.body.classList.contains('hide-laba') ? `${dd} ${BLN_FULL[mo - 1]} ${y}\nSaldo kas: ${rp(d.saldo)}\nOrder: ${d.n}` : tt; });
+    }
+    cal.append(e);
+  }
+}
+let pbView = 'cal';
+$('v-cal').addEventListener('click', () => { pbView = 'cal'; renderPerBulan(); });
+$('v-chart').addEventListener('click', () => { pbView = 'chart'; renderPerBulan(); });
 function renderBulan(rows) {
   const months = rows.filter(r => /^\w{3} \d{4}$/.test(String(r[0]).trim())).map(r => ({
     bulan: r[0].trim(), status: r[1], hari: num(r[2]), pesanan: num(r[4]), pengunjung: num(r[5]),
