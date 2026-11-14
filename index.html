@@ -41,7 +41,7 @@
   nav.tabs { display:flex; gap:4px; padding:4px; border-radius:999px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.07); }
   nav.tabs a { color:var(--muted); text-decoration:none; font-size:13px; font-weight:600; padding:7px 14px; border-radius:999px; transition:background .2s,color .2s; }
   nav.tabs a:hover, nav.tabs a.on { color:var(--fg); background:rgba(255,255,255,.09); }
-  @media (max-width:720px){ .topbar-in { gap:10px; padding:10px 16px; } .brand { flex:1; min-width:0; } .logo { width:38px; height:38px; } h1 { font-size:18px; } .subtitle { font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .live { padding:8px; } #live-txt { display:none; } nav.tabs { order:3; width:100%; justify-content:space-between; } nav.tabs a { padding:6px 10px; } }
+  @media (max-width:720px){ .topbar-in { gap:10px; padding:10px 16px; } .brand { flex:1; min-width:0; } .brand > div { min-width:0; } .logo { width:38px; height:38px; } h1 { font-size:18px; } .subtitle { font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .live { padding:8px; } #live-txt { display:none; } .eye { padding:8px; } .eye span { display:none; } nav.tabs { order:3; width:100%; justify-content:space-between; } nav.tabs a { padding:6px 10px; } }
   .sec { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin:10px 2px -4px; scroll-margin-top:90px; }
   .sec h3 { margin:0; font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); }
   .sec span { font-size:12px; color:var(--dim); }
@@ -51,6 +51,16 @@
   .card { transition:border-color .25s, transform .25s; }
   .card:hover { border-color:rgba(255,255,255,.14); }
   tbody tr:nth-child(even) td { background:rgba(255,255,255,.015); }
+  .eye { display:inline-flex; align-items:center; gap:7px; padding:8px 14px; border-radius:999px; background:var(--card); border:1px solid var(--card-b);
+    color:var(--muted); font:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:color .2s, background .2s; }
+  .eye:hover { color:var(--fg); }
+  .eye svg { width:16px; height:16px; }
+  .eye .off { display:none; }
+  body.hide-laba .eye { color:var(--yellow); background:rgba(255,209,102,.1); border-color:rgba(255,209,102,.3); }
+  body.hide-laba .eye .on { display:none; } body.hide-laba .eye .off { display:inline; }
+  .sens { transition:filter .3s; }
+  body.hide-laba .sens { filter:blur(9px); user-select:none; pointer-events:none; }
+  .right { display:flex; align-items:center; gap:8px; }
   .foot-brand { display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:6px; color:var(--muted); font-weight:700; }
   .foot-brand .logo { width:24px; height:24px; border-radius:7px; font-size:11px; box-shadow:none; }
   .foot-brand .logo.has-img { padding:2px; }
@@ -159,7 +169,14 @@
       </div>
     </div>
     <nav class="tabs"><a href="#ringkasan" class="on">Ringkasan</a><a href="#rekap">Bulanan</a><a href="#detail">Detail</a><a href="#order">Order</a></nav>
-    <div class="live" id="live" title="Klik untuk muat ulang"><span class="dot"></span><span id="live-txt">Live dari Google Sheet</span></div>
+    <div class="right">
+      <button class="eye" id="eye" type="button" aria-pressed="false" title="Sembunyikan / tampilkan angka untung & laba">
+        <svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+        <svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.1A10.6 10.6 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7a9.9 9.9 0 0 0 5.4-1.6"/></svg>
+        <span id="eye-txt">Sembunyikan laba</span>
+      </button>
+      <div class="live" id="live" title="Klik untuk muat ulang"><span class="dot"></span><span id="live-txt">Live dari Google Sheet</span></div>
+    </div>
   </header>
 </div></div>
 <div class="wrap">
@@ -172,7 +189,7 @@
       <div class="label">Saldo kas</div>
       <div class="value num skel" id="k-saldo">Rp 0.000.000</div>
       <div class="meta">
-        <span>Untung bersih <b class="num" id="k-bersih">—</b></span>
+        <span>Untung bersih <b class="num" id="k-bersih" data-sens>—</b></span>
         <span>Iklan & lainnya <b class="num" id="k-lain">—</b></span>
       </div>
       <canvas id="c-spark"></canvas>
@@ -182,21 +199,21 @@
       <p class="hint">Laba order hari terakhir dikurangi iklan hari itu.</p>
       <div class="target">
         <div class="ring">
-          <svg width="128" height="128" viewBox="0 0 128 128">
+          <svg class="sens" width="128" height="128" viewBox="0 0 128 128">
             <circle cx="64" cy="64" r="54" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="12"/>
             <circle id="ring" cx="64" cy="64" r="54" fill="none" stroke="url(#g)" stroke-width="12" stroke-linecap="round" stroke-dasharray="339.3" stroke-dashoffset="339.3" style="transition:stroke-dashoffset 1.2s cubic-bezier(.2,.8,.2,1)"/>
             <defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#22d3a0"/><stop offset="1" stop-color="#4f8cff"/></linearGradient></defs>
           </svg>
-          <div class="center"><div><div class="pct num" id="t-pct">—</div><div class="cap">dari target</div></div></div>
+          <div class="center"><div><div class="pct num" id="t-pct" data-sens>—</div><div class="cap">dari target</div></div></div>
         </div>
         <div>
           <div class="hint" style="margin:0" id="t-tgl">—</div>
-          <div class="big num" id="t-val">—</div>
+          <div class="big num" id="t-val" data-sens>—</div>
           <div class="hint" style="margin:0">Target Rp 500.000 / hari</div>
           <div class="chips">
             <span class="chip">Order <b id="h-order">—</b></span>
             <span class="chip">Omzet <b class="num" id="h-omzet">—</b></span>
-            <span class="chip">Laba <b class="num" id="h-laba">—</b></span>
+            <span class="chip">Laba <b class="num" id="h-laba" data-sens>—</b></span>
           </div>
         </div>
       </div>
@@ -207,15 +224,15 @@
     <div class="card kpi"><div class="top"><span class="label">Omzet order</span><span class="ico" style="background:rgba(79,140,255,.15);color:var(--blue)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg></span></div>
       <div class="value num" id="k-omzet">—</div><div class="sub" id="k-omzet-sub">—</div></div>
     <div class="card kpi"><div class="top"><span class="label">Laba order</span><span class="ico" style="background:rgba(34,211,160,.15);color:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M15 9.5c-.5-1-1.6-1.5-3-1.5-1.7 0-3 .8-3 2s1.3 1.7 3 2 3 .8 3 2-1.3 2-3 2c-1.4 0-2.5-.5-3-1.5M12 6v2M12 16v2"/></svg></span></div>
-      <div class="value num" id="k-laba">—</div><div class="sub" id="k-laba-sub">—</div></div>
+      <div class="value num" id="k-laba" data-sens>—</div><div class="sub" id="k-laba-sub" data-sens>—</div></div>
     <div class="card kpi"><div class="top"><span class="label">Jumlah order</span><span class="ico" style="background:rgba(167,139,250,.15);color:var(--purple)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/></svg></span></div>
       <div class="value num" id="k-order">—</div><div class="sub" id="k-order-sub">—</div></div>
     <div class="card kpi"><div class="top"><span class="label">Rata-rata per hari</span><span class="ico" style="background:rgba(255,169,77,.15);color:var(--orange)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span></div>
-      <div class="value num" id="k-avg">—</div><div class="sub" id="k-avg-sub">—</div></div>
+      <div class="value num" id="k-avg" data-sens>—</div><div class="sub" id="k-avg-sub">—</div></div>
   </section>
 
   <section class="grid2 fade">
-    <div class="card"><h2>📊 Omzet & laba per hari</h2><p class="hint">Arahkan ke batang untuk detail.</p><div class="chartbox"><canvas id="c-harian"></canvas></div></div>
+    <div class="card"><h2>📊 Omzet & laba per hari</h2><p class="hint">Arahkan ke batang untuk detail.</p><div class="chartbox"><canvas id="c-harian" class="sens"></canvas></div></div>
     <div class="card"><h2>💰 Saldo kas berjalan</h2><p class="hint">Setelah vendor, biaya lain, dan iklan.</p><div class="chartbox"><canvas id="c-saldo"></canvas></div></div>
   </section>
 
@@ -224,12 +241,12 @@
     <h2>📅 Rekap bulanan</h2>
     <p class="hint">Jul–Okt dari export Shopee (laba = estimasi), bulan berjalan live dari sheet. Laba bersih = laba order − iklan & biaya lain. ROAS dihitung untuk seluruh penjualan toko, bukan hanya pesanan dari iklan.</p>
     <div class="kpis" style="margin-bottom:14px">
-      <div class="kpi mini accent"><div class="label">Rata-rata laba bersih / bulan</div><div class="value num" id="m-avg">—</div><div class="sub">Bulan berjalan diproyeksikan ke 30 hari</div></div>
-      <div class="kpi mini"><div class="label">Perkiraan laba bersih / tahun</div><div class="value num" id="m-year">—</div><div class="sub">Rata-rata × 12</div></div>
+      <div class="kpi mini accent"><div class="label">Rata-rata laba bersih / bulan</div><div class="value num" id="m-avg" data-sens>—</div><div class="sub">Bulan berjalan diproyeksikan ke 30 hari</div></div>
+      <div class="kpi mini"><div class="label">Perkiraan laba bersih / tahun</div><div class="value num" id="m-year" data-sens>—</div><div class="sub">Rata-rata × 12</div></div>
       <div class="kpi mini"><div class="label">Perkiraan omzet bersih / tahun</div><div class="value num" id="m-oyear">—</div><div class="sub">Setelah potongan Shopee</div></div>
       <div class="kpi mini"><div class="label">ROAS rata-rata</div><div class="value num" id="m-roas">—</div><div class="sub" id="m-roas-sub">Penjualan Shopee ÷ biaya iklan</div></div>
     </div>
-    <div class="chartbox"><canvas id="c-bulan"></canvas></div>
+    <div class="chartbox"><canvas id="c-bulan" class="sens"></canvas></div>
     <div class="scroll" style="margin-top:14px"><table>
       <thead><tr><th>Bulan</th><th class="r">Pesanan</th><th class="r hide-sm">Pengunjung</th><th class="r">Omzet bersih</th><th class="r hide-sm">Laba order</th><th class="r hide-sm">Iklan</th><th class="r">ROAS</th><th class="r">Laba bersih</th></tr></thead>
       <tbody id="tb-bulan"></tbody></table></div>
@@ -242,7 +259,7 @@
       <h2>📦 Stok stand</h2><p class="hint">Merah kalau sisa 5 atau kurang.</p>
       <div id="stok"></div>
       <h2 style="margin-top:16px">🧮 Alokasi laba</h2>
-      <div class="alok" id="alok"></div>
+      <div class="alok sens" id="alok"></div>
     </div>
   </section>
 
@@ -362,7 +379,7 @@ function render(kas, saldoAwal, stok) {
     const row = document.createElement('div'); row.className = 'bar-row';
     const name = document.createElement('div'); name.className = 'name'; name.textContent = k;
     const track = document.createElement('div'); track.className = 'bar-track'; const fill = document.createElement('div'); fill.className = 'bar-fill'; track.append(fill);
-    const val = document.createElement('div'); val.className = 'val num'; val.textContent = rp(v.laba); const sm = document.createElement('small'); sm.textContent = v.n + ' order · ' + rp(v.laba / v.n) + '/order'; val.append(sm);
+    const val = document.createElement('div'); val.className = 'val num sens'; val.textContent = rp(v.laba); const sm = document.createElement('small'); sm.textContent = v.n + ' order · ' + rp(v.laba / v.n) + '/order'; val.append(sm);
     row.append(name, track, val); $('bars').append(row);
     requestAnimationFrame(() => requestAnimationFrame(() => fill.style.width = Math.max(2, v.laba / maxL * 100) + '%'));
   });
@@ -412,9 +429,9 @@ function renderBulan(rows) {
     const cell = (txt, cls) => { const td = document.createElement('td'); if (cls) td.className = cls; td.textContent = txt; tr.append(td); return td; };
     const b = cell(m.bulan); if (m.status === 'Berjalan') { const p = document.createElement('span'); p.className = 'pill'; p.style.marginLeft = '6px'; p.textContent = m.hari + ' hari'; b.append(p); }
     cell(m.pesanan.toLocaleString('id-ID'), 'r num'); cell(m.pengunjung ? m.pengunjung.toLocaleString('id-ID') : '—', 'r num hide-sm');
-    cell(rp(m.omzet), 'r num'); cell(rp(m.laba), 'r num hide-sm'); cell(rp(m.iklan), 'r num hide-sm');
+    cell(rp(m.omzet), 'r num'); cell(rp(m.laba), 'r num sens hide-sm'); cell(rp(m.iklan), 'r num hide-sm');
     cell(fx(m.roas), 'r num ' + (m.roas && roasBep ? (m.roas >= roasBep ? 'pos' : 'neg') : ''));
-    const td = cell(rp(m.bersih), 'r num ' + (m.bersih < 0 ? 'neg' : 'pos'));
+    const td = cell(rp(m.bersih), 'r num sens ' + (m.bersih < 0 ? 'neg' : 'pos'));
     if (m.status === 'Berjalan') { const s = document.createElement('small'); s.style.cssText = 'display:block;color:var(--muted);font-size:11px'; s.textContent = '≈ ' + rp(m.bersih30) + ' / 30 hari'; td.append(s); }
     tb.append(tr);
   });
@@ -438,11 +455,19 @@ function drawOrders() {
     const cell = (txt, cls) => { const td = document.createElement('td'); if (cls) td.className = cls; td.textContent = txt; tr.append(td); return td; };
     cell(tgl(o.tanggal)); cell(o.pelanggan);
     const td = document.createElement('td'); const p = document.createElement('span'); p.className = 'pill'; p.textContent = o.ukuran; td.append(p); tr.append(td);
-    cell(rp(o.harga), 'r num'); cell(rp(o.vendor), 'r num hide-sm'); cell(rp(o.laba), 'r num ' + (o.laba < 0 ? 'neg' : 'pos'));
+    cell(rp(o.harga), 'r num'); cell(rp(o.vendor), 'r num hide-sm'); cell(rp(o.laba), 'r num sens ' + (o.laba < 0 ? 'neg' : 'pos'));
     tb.append(tr);
   });
 }
 
+document.querySelectorAll('[data-sens]').forEach(el => el.classList.add('sens'));
+function setHide(on) {
+  document.body.classList.toggle('hide-laba', on);
+  $('eye').setAttribute('aria-pressed', on); $('eye-txt').textContent = on ? 'Tampilkan laba' : 'Sembunyikan laba';
+  try { localStorage.setItem('voltix-hide-laba', on ? '1' : '0'); } catch (e) {}
+}
+$('eye').addEventListener('click', () => setHide(!document.body.classList.contains('hide-laba')));
+try { setHide(localStorage.getItem('voltix-hide-laba') === '1'); } catch (e) {}
 (() => { const img = new Image(); img.onload = () => document.querySelectorAll('[data-logo]').forEach(el => { el.textContent = ''; el.classList.add('has-img'); const i = img.cloneNode(); i.alt = 'Voltix'; el.append(i); }); img.src = 'logo-mark.png'; })();
 const navLinks = [...document.querySelectorAll('nav.tabs a')];
 const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) navLinks.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id)); }), { rootMargin: '-40% 0px -55% 0px' });
