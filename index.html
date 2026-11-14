@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Voltix Printing — Arus Kas</title>
 <meta name="theme-color" content="#0b1020">
+<link rel="icon" href="logo-mark.png">
+<link rel="apple-touch-icon" href="logo-mark.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -27,10 +29,31 @@
   .num { font-variant-numeric:tabular-nums; }
 
   /* header */
-  header { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-  .brand { display:flex; align-items:center; gap:14px; }
-  .logo { width:48px; height:48px; border-radius:14px; display:grid; place-items:center; font-weight:800; font-size:22px;
+  .topbar { position:sticky; top:0; z-index:20; background:rgba(11,16,32,.72); backdrop-filter:blur(16px) saturate(140%); -webkit-backdrop-filter:blur(16px) saturate(140%);
+    border-bottom:1px solid rgba(255,255,255,.07); }
+  .topbar-in { max-width:1240px; margin:0 auto; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  header { display:contents; }
+  .brand { display:flex; align-items:center; gap:12px; }
+  .logo { width:44px; height:44px; border-radius:13px; display:grid; place-items:center; font-weight:800; font-size:20px; overflow:hidden; flex:none;
     background:linear-gradient(135deg,var(--blue),var(--purple)); box-shadow:0 8px 24px rgba(79,140,255,.35); }
+  .logo.has-img { background:#fff; padding:5px; }
+  .logo img { width:100%; height:100%; object-fit:contain; display:block; }
+  nav.tabs { display:flex; gap:4px; padding:4px; border-radius:999px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.07); }
+  nav.tabs a { color:var(--muted); text-decoration:none; font-size:13px; font-weight:600; padding:7px 14px; border-radius:999px; transition:background .2s,color .2s; }
+  nav.tabs a:hover, nav.tabs a.on { color:var(--fg); background:rgba(255,255,255,.09); }
+  @media (max-width:720px){ .topbar-in { gap:10px; padding:10px 16px; } .brand { flex:1; min-width:0; } .logo { width:38px; height:38px; } h1 { font-size:18px; } .subtitle { font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .live { padding:8px; } #live-txt { display:none; } nav.tabs { order:3; width:100%; justify-content:space-between; } nav.tabs a { padding:6px 10px; } }
+  .sec { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin:10px 2px -4px; scroll-margin-top:90px; }
+  .sec h3 { margin:0; font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); }
+  .sec span { font-size:12px; color:var(--dim); }
+  .mini { padding:14px; border-radius:14px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.05); }
+  .mini .value { font-size:24px; }
+  .mini.accent { background:linear-gradient(135deg,rgba(34,211,160,.16),rgba(79,140,255,.10)); border-color:rgba(34,211,160,.25); }
+  .card { transition:border-color .25s, transform .25s; }
+  .card:hover { border-color:rgba(255,255,255,.14); }
+  tbody tr:nth-child(even) td { background:rgba(255,255,255,.015); }
+  .foot-brand { display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:6px; color:var(--muted); font-weight:700; }
+  .foot-brand .logo { width:24px; height:24px; border-radius:7px; font-size:11px; box-shadow:none; }
+  .foot-brand .logo.has-img { padding:2px; }
   h1 { margin:0; font-size:clamp(20px,3vw,28px); font-weight:800; letter-spacing:-.02em; }
   .subtitle { color:var(--muted); font-size:13px; margin-top:2px; }
   .live { display:inline-flex; align-items:center; gap:8px; padding:8px 14px; border-radius:999px; background:var(--card);
@@ -126,20 +149,24 @@
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="fade">
+<div class="topbar"><div class="topbar-in">
+  <header>
     <div class="brand">
-      <div class="logo">V</div>
+      <div class="logo" data-logo>V</div>
       <div>
         <h1>Voltix Printing</h1>
         <div class="subtitle">Dashboard arus kas · <span id="periode">memuat…</span></div>
       </div>
     </div>
+    <nav class="tabs"><a href="#ringkasan" class="on">Ringkasan</a><a href="#rekap">Bulanan</a><a href="#detail">Detail</a><a href="#order">Order</a></nav>
     <div class="live" id="live" title="Klik untuk muat ulang"><span class="dot"></span><span id="live-txt">Live dari Google Sheet</span></div>
   </header>
+</div></div>
+<div class="wrap">
 
   <div class="err" id="err"></div>
 
+  <div class="sec" id="ringkasan"><h3>Ringkasan bulan berjalan</h3></div>
   <section class="hero fade">
     <div class="card saldo">
       <div class="label">Saldo kas</div>
@@ -192,14 +219,15 @@
     <div class="card"><h2>💰 Saldo kas berjalan</h2><p class="hint">Setelah vendor, biaya lain, dan iklan.</p><div class="chartbox"><canvas id="c-saldo"></canvas></div></div>
   </section>
 
-  <section class="card fade" id="rekap">
+  <div class="sec" id="rekap-h"><h3>Tren bulanan</h3><span>Juli – sekarang</span></div>
+  <section class="card fade" id="rekap" style="scroll-margin-top:90px">
     <h2>📅 Rekap bulanan</h2>
     <p class="hint">Jul–Okt dari export Shopee (laba = estimasi), bulan berjalan live dari sheet. Laba bersih = laba order − iklan & biaya lain. ROAS dihitung untuk seluruh penjualan toko, bukan hanya pesanan dari iklan.</p>
     <div class="kpis" style="margin-bottom:14px">
-      <div class="kpi" style="padding:12px;border-radius:14px;background:rgba(255,255,255,.04)"><div class="label">Rata-rata laba bersih / bulan</div><div class="value num" id="m-avg">—</div><div class="sub">Bulan berjalan diproyeksikan ke 30 hari</div></div>
-      <div class="kpi" style="padding:12px;border-radius:14px;background:rgba(255,255,255,.04)"><div class="label">Perkiraan laba bersih / tahun</div><div class="value num" id="m-year">—</div><div class="sub">Rata-rata × 12</div></div>
-      <div class="kpi" style="padding:12px;border-radius:14px;background:rgba(255,255,255,.04)"><div class="label">Perkiraan omzet bersih / tahun</div><div class="value num" id="m-oyear">—</div><div class="sub">Setelah potongan Shopee</div></div>
-      <div class="kpi" style="padding:12px;border-radius:14px;background:rgba(255,255,255,.04)"><div class="label">ROAS rata-rata</div><div class="value num" id="m-roas">—</div><div class="sub" id="m-roas-sub">Penjualan Shopee ÷ biaya iklan</div></div>
+      <div class="kpi mini accent"><div class="label">Rata-rata laba bersih / bulan</div><div class="value num" id="m-avg">—</div><div class="sub">Bulan berjalan diproyeksikan ke 30 hari</div></div>
+      <div class="kpi mini"><div class="label">Perkiraan laba bersih / tahun</div><div class="value num" id="m-year">—</div><div class="sub">Rata-rata × 12</div></div>
+      <div class="kpi mini"><div class="label">Perkiraan omzet bersih / tahun</div><div class="value num" id="m-oyear">—</div><div class="sub">Setelah potongan Shopee</div></div>
+      <div class="kpi mini"><div class="label">ROAS rata-rata</div><div class="value num" id="m-roas">—</div><div class="sub" id="m-roas-sub">Penjualan Shopee ÷ biaya iklan</div></div>
     </div>
     <div class="chartbox"><canvas id="c-bulan"></canvas></div>
     <div class="scroll" style="margin-top:14px"><table>
@@ -207,6 +235,7 @@
       <tbody id="tb-bulan"></tbody></table></div>
   </section>
 
+  <div class="sec" id="detail"><h3>Detail usaha</h3></div>
   <section class="grid2 fade">
     <div class="card"><h2>📐 Laba per ukuran</h2><p class="hint">Diurutkan dari laba terbesar.</p><div class="bars" id="bars"></div></div>
     <div class="card">
@@ -217,6 +246,7 @@
     </div>
   </section>
 
+  <div class="sec" id="order"><h3>Order</h3></div>
   <section class="card fade">
     <div class="toolbar"><h2 style="margin:0">🧾 Daftar order</h2><input type="search" id="q" placeholder="Cari no. pesanan, ukuran, catatan…"></div>
     <div class="scroll"><table>
@@ -224,7 +254,7 @@
       <tbody id="tb-order"></tbody></table></div>
   </section>
 
-  <footer>Harga jual memakai perkiraan potongan biaya Shopee · Data diperbarui otomatis tiap 5 menit</footer>
+  <footer><div class="foot-brand"><div class="logo" data-logo>V</div>Voltix Printing</div>Harga jual memakai perkiraan potongan biaya Shopee · Data diperbarui otomatis tiap 5 menit</footer>
 </div>
 
 <script>
@@ -413,6 +443,10 @@ function drawOrders() {
   });
 }
 
+(() => { const img = new Image(); img.onload = () => document.querySelectorAll('[data-logo]').forEach(el => { el.textContent = ''; el.classList.add('has-img'); const i = img.cloneNode(); i.alt = 'Voltix'; el.append(i); }); img.src = 'logo-mark.png'; })();
+const navLinks = [...document.querySelectorAll('nav.tabs a')];
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) navLinks.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id)); }), { rootMargin: '-40% 0px -55% 0px' });
+['ringkasan', 'rekap', 'detail', 'order'].forEach(id => $(id) && io.observe($(id)));
 document.querySelectorAll('th[data-k]').forEach(th => th.addEventListener('click', () => { const k = th.dataset.k; sortD = k === sortK ? -sortD : -1; sortK = k; drawOrders(); }));
 $('q').addEventListener('input', drawOrders);
 $('live').addEventListener('click', load);
