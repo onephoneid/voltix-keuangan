@@ -349,11 +349,15 @@ const SHEET_ID = '1CX-Me2OOm8V-Ren9pneR5C7wT4NPVDhkm5suRPb_kfA';
 const TARGET = 500000;
 const csvUrl = (sheet, range) => `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheet)}${range ? '&range=' + range : ''}&t=${Date.now()}`;
 const BULAN = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-const num = (x) => { const n = Number(String(x ?? '').replace(/[^0-9.-]/g, '')); return isFinite(n) ? n : 0; };
+const num = (x) => { const t = String(x ?? '').trim(), neg = /^\(.*\)$/.test(t) || /^[-−]/.test(t); const n = Number(t.replace(/[^0-9.]/g, '')); return isFinite(n) ? (neg ? -n : n) : 0; };
 const rp = (v) => (v < 0 ? '−' : '') + 'Rp ' + Math.round(Math.abs(v)).toLocaleString('id-ID');
 const rpShort = (v) => { const a = Math.abs(v), s = v < 0 ? '−' : ''; return a >= 1e6 ? s + (a/1e6).toFixed(1).replace('.', ',') + ' jt' : a >= 1e3 ? s + Math.round(a/1e3) + ' rb' : s + a; };
 const pct = (v) => (v * 100).toFixed(0) + '%';
 const iso = (s) => { const m = String(s).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); return m ? `${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}` : null; };
+const BLN3 = { jan: 1, feb: 2, mar: 3, apr: 4, mei: 5, may: 5, jun: 6, jul: 7, agu: 8, agt: 8, aug: 8, sep: 9, okt: 10, oct: 10, nov: 11, des: 12, dec: 12 };
+const isoAny = (s) => { const t = String(s ?? '').trim(); let m = t.match(/^(\d{1,2})[ -]([A-Za-z]{3})[a-z]*[ -](\d{4})$/);
+  if (m && BLN3[m[2].toLowerCase()]) return `${m[3]}-${String(BLN3[m[2].toLowerCase()]).padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+  m = t.match(/^(\d{4})-(\d{2})-(\d{2})/); if (m) return `${m[1]}-${m[2]}-${m[3]}`; return iso(t); };
 const tgl = (d) => { const [, m, dd] = d.split('-').map(Number); return `${dd} ${BULAN[m-1]}`; };
 const $ = (id) => document.getElementById(id);
 let charts = [], orders = [], sortK = 'tanggal', sortD = -1, first = true;
@@ -377,8 +381,14 @@ async function getCsv(sheet, range) {
 async function load() {
   $('err').style.display = 'none'; $('live').classList.add('loading'); $('live-txt').textContent = 'Memuat…';
   try {
-    const [ob, kas, stok, dash] = await Promise.all([getCsv('Order Banner'), getCsv('Kas Lainnya'), getCsv('Stok', 'A3:F10'), getCsv('Dashboard', 'A2:B2')]);
-    const saldoAwal = num(dash[0]?.[1]);
+    const [ob, kas, stok, dSum, dDay, dUk] = await Promise.all([getCsv('Order Banner'), getCsv('Kas Lainnya'), getCsv('Stok', 'A3:F10'),
+      getCsv('Dashboard', 'A1:B16&headers=0'), getCsv('Dashboard', 'A19:K1000&headers=0'), getCsv('Dashboard', 'M19:P300&headers=0')]);
+    const S = Object.fromEntries(dSum.filter(r => r[0] && r[1] !== undefined && r[1] !== '').map(r => [String(r[0]).trim(), num(r[1])]));
+    const harian = dDay.map(r => ({ d: isoAny(r[0]), n: num(r[1]), omzet: num(r[2]), laba: num(r[6]), lainIn: num(r[7]), lainOut: num(r[8]), arus: num(r[9]), saldo: num(r[10]) }))
+      .filter(x => x.d).sort((a, b) => a.d.localeCompare(b.d));
+    const ukuran = dUk.filter(r => r[0] && !/^(ukuran|rekap)/i.test(String(r[0]).trim()) && num(r[1]) > 0).map(r => ({ k: String(r[0]).trim(), n: num(r[1]), omzet: num(r[2]), laba: num(r[3]) }));
+    DASH = { S, harian, ukuran, ok: harian.length > 0 && 'SALDO KAS' in S };
+    const saldoAwal = S['Saldo awal kas'] || 0;
     orders = ob.slice(1).map(r => ({ tanggal: iso(r[0]), pelanggan: r[2] || '', ukuran: r[3] || '', harga: num(r[4]), vendor: num(r[6]), laba: num(r[10]), arus: num(r[12]), catatan: r[13] || '' }))
       .filter(o => o.tanggal && (o.harga || o.vendor));
     const kasRows = kas.slice(1).map(r => ({ tanggal: iso(r[0]), masuk: num(r[3]), keluar: num(r[4]) })).filter(k => k.tanggal);
@@ -403,15 +413,29 @@ function render(kas, saldoAwal, stok) {
   const byDay = days.map(d => { const os = orders.filter(o => o.tanggal === d), ks = kas.filter(k => k.tanggal === d);
     return { d, n: os.length, omzet: sum(os, o => o.harga), laba: sum(os, o => o.laba), arus: sum(os, o => o.arus) + sum(ks, k => k.masuk - k.keluar), iklan: sum(ks, k => k.keluar - k.masuk) }; });
   let run = saldoAwal; byDay.forEach(x => { run += x.arus; x.saldo = run; });
-  DAILY = byDay;
+  let nOrder = orders.length, saldo2 = saldo, omzet2 = omzet, laba2 = laba, lainIn2 = lainIn, lainOut2 = lainOut, daily = byDay;
+  if (DASH.ok) {   // sumber utama: tab Dashboard di Google Sheet
+    const S = DASH.S;
+    saldo2 = S['SALDO KAS']; omzet2 = S['Omzet order'] ?? omzet; laba2 = S['Estimasi laba order'] ?? laba;
+    lainIn2 = S['Pemasukan lainnya'] ?? lainIn; lainOut2 = S['Pengeluaran lainnya'] ?? lainOut;
+    daily = DASH.harian.map(x => ({ d: x.d, n: x.n, omzet: x.omzet, laba: x.laba, arus: x.arus, saldo: x.saldo, iklan: x.lainOut - x.lainIn }));
+    nOrder = daily.reduce((t, x) => t + x.n, 0);
+  }
+  DAILY = daily;
+  return renderMain(daily, saldo2, omzet2, laba2, lainIn2, lainOut2, nOrder, stok);
+}
+
+function renderMain(byDay, saldo, omzet, laba, lainIn, lainOut, nOrder, stok) {
+  const days = byDay.map(x => x.d);
+  $('periode').textContent = days.length ? `${tgl(days[0])} – ${tgl(days[days.length-1])} ${days[0].slice(0,4)}` : '';
 
   countUp($('k-saldo'), saldo);
   $('k-bersih').textContent = rp(laba + lainIn - lainOut); $('k-lain').textContent = rp(lainOut);
-  countUp($('k-omzet'), omzet); $('k-omzet-sub').textContent = 'Rata-rata ' + rp(omzet / (orders.length || 1)) + ' / order';
+  countUp($('k-omzet'), omzet); $('k-omzet-sub').textContent = 'Rata-rata ' + rp(omzet / (nOrder || 1)) + ' / order';
   countUp($('k-laba'), laba); $('k-laba-sub').textContent = 'Margin ' + (omzet ? (laba / omzet * 100).toFixed(1).replace('.', ',') : 0) + '% dari omzet';
-  countUp($('k-order'), orders.length, v => Math.round(v).toLocaleString('id-ID')); $('k-order-sub').textContent = 'Dalam ' + days.length + ' hari';
+  countUp($('k-order'), nOrder, v => Math.round(v).toLocaleString('id-ID')); $('k-order-sub').textContent = 'Dalam ' + days.length + ' hari';
   const avgBersih = days.length ? (laba + lainIn - lainOut) / days.length : 0;
-  countUp($('k-avg'), avgBersih); $('k-avg-sub').textContent = (orders.length / (days.length || 1)).toFixed(1).replace('.', ',') + ' order · untung bersih / hari';
+  countUp($('k-avg'), avgBersih); $('k-avg-sub').textContent = (nOrder / (days.length || 1)).toFixed(1).replace('.', ',') + ' order · untung bersih / hari';
 
   const last = byDay[byDay.length - 1], prev = byDay[byDay.length - 2];
   if (last) {
@@ -444,7 +468,9 @@ function render(kas, saldoAwal, stok) {
       options: { maintainAspectRatio: false, events: [], plugins: { legend: { display: false }, tooltip: { enabled: false } }, scales: { x: { display: false }, y: { display: false } } } })
   ];
 
-  const g = {}; orders.forEach(o => { const k = o.ukuran || '—'; (g[k] ||= { n: 0, omzet: 0, laba: 0 }); g[k].n++; g[k].omzet += o.harga; g[k].laba += o.laba; });
+  const g = {};
+  if (DASH.ok && DASH.ukuran.length) DASH.ukuran.forEach(u => g[u.k] = { n: u.n, omzet: u.omzet, laba: u.laba });
+  else orders.forEach(o => { const k = o.ukuran || '—'; (g[k] ||= { n: 0, omzet: 0, laba: 0 }); g[k].n++; g[k].omzet += o.harga; g[k].laba += o.laba; });
   const list = Object.entries(g).sort((a, b) => b[1].laba - a[1].laba), maxL = Math.max(...list.map(x => x[1].laba), 1);
   $('bars').innerHTML = '';
   list.forEach(([k, v]) => {
@@ -476,11 +502,12 @@ function render(kas, saldoAwal, stok) {
   $('alok').innerHTML = '';
   [['💼 Gaji pemilik', .3], ['🏦 Kas usaha', .4], ['🚀 Pengembangan', .2], ['🛟 Dana darurat', .1]].forEach(([p, s]) => {
     const d = document.createElement('div'); const k = document.createElement('div'); k.className = 'k'; k.textContent = p + ' · ' + s * 100 + '%';
-    const v = document.createElement('div'); v.className = 'v num'; v.textContent = rp(laba * s); d.append(k, v); $('alok').append(d);
+    const v = document.createElement('div'); v.className = 'v num'; const fromS = DASH.ok ? Object.entries(DASH.S).find(([k]) => k.includes(Math.round(s * 100) + '%'))?.[1] : null; v.textContent = rp(fromS ?? laba * s); d.append(k, v); $('alok').append(d);
   });
   drawOrders();
 }
 
+let DASH = { ok: false };
 let chartBulan, chartPB, DAILY = [], REKAP = [], selMonth = null;
 const BLN_IDX = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, Mei: 4, Jun: 5, Jul: 6, Agu: 7, Agt: 7, Sep: 8, Okt: 9, Nov: 10, Des: 11 };
 const BLN_FULL = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
